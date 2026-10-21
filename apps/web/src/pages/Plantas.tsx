@@ -57,9 +57,9 @@ const PRANCHETA =
 
 /** Plantas exportadas do modelo Matterport da obra, prontas para carregar. */
 const PLANTAS_DO_MODELO = [
-  { name: "Pavimento 1", src: "/plantas/pavimento-1.png" },
-  { name: "Pavimento 2", src: "/plantas/pavimento-2.png" },
-  { name: "Pavimento 3", src: "/plantas/pavimento-3.png" },
+  { name: "Pavimento 1", src: `${import.meta.env.BASE_URL}plantas/pavimento-1.png` },
+  { name: "Pavimento 2", src: `${import.meta.env.BASE_URL}plantas/pavimento-2.png` },
+  { name: "Pavimento 3", src: `${import.meta.env.BASE_URL}plantas/pavimento-3.png` },
 ];
 
 /**

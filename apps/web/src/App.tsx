@@ -99,7 +99,7 @@ export default function App() {
     return <Splash label="Abrindo o Obra360…" />;
   }
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "") || "/"}>
       <Titulo />
       <Routes>
         <Route path="/entrar" element={<Login />} />

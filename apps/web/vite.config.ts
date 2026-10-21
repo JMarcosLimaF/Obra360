@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // No GitHub Pages o site mora em /Obra360/. No localhost a raiz continua /.
+  base: process.env.GITHUB_PAGES === "1" ? "/Obra360/" : "/",
   server: {
     // 5199 é a porta do README. A 80 exige administrador e só é necessária
     // se a chave do Matterport estiver cadastrada exatamente em localhost:80.
