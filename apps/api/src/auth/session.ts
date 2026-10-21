@@ -30,10 +30,14 @@ export async function registerSession(app: FastifyInstance): Promise<void> {
 }
 
 function cookieBase(app: FastifyInstance) {
+  const secure = app.ctx.cfg.COOKIE_SECURE;
+  // O site público fica em outro endereço. Sem SameSite=None o navegador
+  // guarda o cookie e não o devolve nas chamadas da interface.
   return {
     httpOnly: true,
-    sameSite: "lax" as const,
-    secure: app.ctx.cfg.COOKIE_SECURE,
+    sameSite: secure ? "none" as const : "lax" as const,
+    secure,
+    partitioned: secure,
     path: "/",
   };
 }
@@ -52,9 +56,10 @@ export function setSessionCookies(
   });
 }
 
-export function clearSessionCookies(reply: FastifyReply): void {
-  reply.clearCookie(ACCESS_COOKIE, { path: "/" });
-  reply.clearCookie(REFRESH_COOKIE, { path: "/" });
+export function clearSessionCookies(app: FastifyInstance, reply: FastifyReply): void {
+  const base = cookieBase(app);
+  reply.clearCookie(ACCESS_COOKIE, base);
+  reply.clearCookie(REFRESH_COOKIE, base);
 }
 
 interface GoTrueSession {

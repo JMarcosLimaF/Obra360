@@ -60,7 +60,7 @@ export async function isBlankFrame(dataUrl: string, threshold = 12): Promise<boo
 /** Converte uma URL pública em data URL — a API precisa dos bytes, não do link. */
 export async function srcToDataUrl(src: string): Promise<string> {
   if (src.startsWith("data:")) return src;
-  const res = await fetch(src);
+  const res = await fetch(src, { credentials: "include" });
   const blob = await res.blob();
   return await new Promise<string>((resolve, reject) => {
     const fr = new FileReader();

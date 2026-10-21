@@ -29,6 +29,8 @@ jobs:
         run: npm ci && npm run build
         env:
           GITHUB_PAGES: "1"
+          # A interface fica no Pages; a API é o serviço no Cloud Run.
+          VITE_API_URL: https://obra360-api-wxnip5xona-rj.a.run.app
       # Sem isto, um endereço como /obras/Nome abre a página 404 do GitHub
       # em vez do aplicativo. O arquivo é a mesma interface.
       - name: Reservar a página desconhecida para o aplicativo

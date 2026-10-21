@@ -8,12 +8,20 @@ export class ApiError extends Error {
   }
 }
 
+/** Vazio no localhost (o Vite encaminha /api). No site público, o endereço da API. */
+const API = (import.meta.env.VITE_API_URL ?? "").replace(/\/$/, "");
+
+export function apiUrl(path: string): string {
+  if (!API || path.startsWith("http")) return path;
+  return `${API}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has("content-type")) headers.set("content-type", "application/json");
   let res: Response;
   try {
-    res = await fetch(path, { ...init, headers, credentials: "include" });
+    res = await fetch(apiUrl(path), { ...init, headers, credentials: "include" });
   } catch {
     throw new ApiError("A API não está no ar. Suba o servidor em apps/api.", 0);
   }
