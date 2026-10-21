@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Sistema visual Obra360 — v2 */
+  --color-ink: #0e3656;      /* navy da marca — tinta principal */
+  --color-ink-2: #536a80;    /* texto secundário */
+  --color-ink-3: #8597a9;    /* rótulos, metadados */
+  --color-line: #e1e8ef;     /* borda padrão */
+  --color-line-2: #edf1f6;   /* hairline interna */
+  --color-field: #d3dde7;    /* borda de campos */
+  --color-page: #f2f5f9;     /* fundo da aplicação */
+  --color-topbar: #ffffff;   /* barras */
+  --color-subtle: #f7f9fc;   /* superfície rebaixada dentro de um card */
+  --color-brand: #009bff;    /* azul de acento */
+  --color-brand-soft: #e8f5ff;
+  --color-action: #0a72d1;   /* links e séries de dados */
+  --color-positive: #2f8a5b; /* dado positivo / planejado */
+  --color-danger: #c23a2f;   /* crítico / vencida */
+  --color-warn: #8a6116;     /* alerta / em execução */
+  --color-navy-950: #061a2e;
+  --color-navy-900: #0a2540;
+  --color-navy-800: #0e3656;
+  --color-navy-700: #164a75;
+
+  /* cantos mais generosos: o `rounded` puro vira 10px */
+  --radius: 0.625rem;
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.5rem;
+
+  /* sombras em camadas, tingidas de navy em vez de preto */
+  --shadow-xs: 0 1px 2px rgb(14 54 86 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(14 54 86 / 0.05), 0 2px 6px -2px rgb(14 54 86 / 0.08);
+  --shadow: 0 1px 2px rgb(14 54 86 / 0.05), 0 4px 12px -4px rgb(14 54 86 / 0.1);
+  --shadow-md: 0 1px 2px rgb(14 54 86 / 0.04), 0 8px 24px -8px rgb(14 54 86 / 0.16);
+  --shadow-lg: 0 2px 6px rgb(14 54 86 / 0.05), 0 18px 40px -14px rgb(14 54 86 / 0.24);
+  --shadow-xl: 0 4px 10px rgb(14 54 86 / 0.06), 0 28px 60px -20px rgb(14 54 86 / 0.32);
+  --shadow-2xl: 0 30px 80px -24px rgb(6 26 46 / 0.45);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-page: page-in 0.55s var(--ease-out-expo) both;
+  --animate-rise: rise 0.6s var(--ease-out-expo) both;
+  --animate-fade: fade 0.4s ease-out both;
+  --animate-pop: pop 0.35s var(--ease-out-expo) both;
+  --animate-grow-x: grow-x 1.1s var(--ease-out-expo) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-pulse-ring: pulse-ring 2s ease-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+}
+
+/* fora do @theme para sempre sair no CSS, mesmo sem utilitário animate-* */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.7; }
+  70% { box-shadow: 0 0 0 7px transparent; opacity: 0; }
+  100% { box-shadow: 0 0 0 0 transparent; opacity: 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-page font-sans text-ink antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: rgb(0 155 255 / 0.18);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cfd9e3 transparent;
+}
+
+:focus-visible {
+  outline: 2px solid rgb(0 155 255 / 0.55);
+  outline-offset: 2px;
+}
+
+/* ───────────── peças reaproveitadas pelas telas ───────────── */
+@layer components {
+  /* cartão base: branco, canto largo, sombra leve que sobe no hover */
+  .card {
+    @apply rounded-2xl border border-line/80 bg-white shadow-sm;
+  }
+  .card-hover {
+    @apply transition-[translate,scale,box-shadow,border-color] duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-line hover:shadow-md;
+  }
+  .card-head {
+    @apply flex items-center justify-between gap-3 border-b border-line-2 px-5 py-4;
+  }
+  .card-title {
+    @apply text-[14px] font-semibold tracking-[-0.01em] text-ink;
+  }
+
+  /* botões */
+  .btn {
+    @apply inline-flex h-9 shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-[11px] px-3.5 text-[12.5px] font-semibold transition-[background-color,border-color,color,box-shadow,scale,translate] duration-200 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45;
+  }
+  .btn-sm {
+    @apply h-8 rounded-[9px] px-3 text-[12px];
+  }
+  .btn-lg {
+    @apply h-11 rounded-[14px] px-5 text-[13.5px];
+  }
+  .btn-primary {
+    @apply bg-ink text-white shadow-[0_1px_0_rgb(255_255_255/0.12)_inset,0_6px_16px_-6px_rgb(14_54_86/0.55)] hover:bg-navy-700 hover:shadow-[0_1px_0_rgb(255_255_255/0.14)_inset,0_10px_22px_-8px_rgb(14_54_86/0.6)];
+  }
+  .btn-accent {
+    @apply bg-brand text-white shadow-[0_1px_0_rgb(255_255_255/0.2)_inset,0_6px_16px_-6px_rgb(0_155_255/0.6)] hover:bg-[#0089e6];
+  }
+  .btn-secondary {
+    @apply border border-line bg-white text-ink shadow-xs hover:border-field hover:bg-subtle;
+  }
+  .btn-ghost {
+    @apply text-ink-2 hover:bg-ink/5 hover:text-ink;
+  }
+  .btn-danger {
+    @apply bg-danger text-white shadow-[0_6px_16px_-6px_rgb(194_58_47/0.55)] hover:bg-[#a83226];
+  }
+
+  /* campos */
+  .field {
+    @apply w-full rounded-[11px] border border-field bg-white px-3 py-2 text-[13px] text-ink shadow-xs transition-[border-color,box-shadow] duration-200 placeholder:text-ink-3 hover:border-[#bfcbd8] focus:border-brand focus:shadow-[0_0_0_4px_rgb(0_155_255/0.12)] focus:outline-none disabled:bg-subtle disabled:opacity-60;
+  }
+
+  /* rótulo pequeno de metadado */
+  .label {
+    @apply text-[11px] font-semibold tracking-[0.01em] text-ink-3;
+  }
+
+  /* abas segmentadas */
+  .segmented {
+    @apply inline-flex items-center gap-1 rounded-xl bg-ink/[0.05] p-1;
+  }
+
+  /* esqueleto de carregamento */
+  .skeleton {
+    @apply animate-shimmer rounded-lg bg-[linear-gradient(90deg,#e9eef4_0%,#f5f8fb_50%,#e9eef4_100%)] bg-[length:200%_100%];
+  }
+
+  /* revelação em cascata: style={{ "--i": n }} define a ordem */
+  .reveal {
+    animation: rise 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 55ms + 40ms);
+  }
+
+  /* fundo da área de trabalho: brilho da marca + grade de prancha que some */
+  .app-canvas {
+    background:
+      radial-gradient(1100px 420px at 70% -120px, rgb(0 155 255 / 0.08), transparent 70%),
+      radial-gradient(700px 360px at -10% -80px, rgb(14 54 86 / 0.06), transparent 70%),
+      var(--color-page);
+  }
+  .blueprint {
+    background-image:
+      linear-gradient(rgb(14 54 86 / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(14 54 86 / 0.045) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: linear-gradient(to bottom, black, transparent 420px);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  header,
+  nav,
+  aside {
+    display: none !important;
+  }
+  .app-shell,
+  .app-shell main,
+  .app-shell [class*="overflow-y-auto"] {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+}

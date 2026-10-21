@@ -1,0 +1,8 @@
+node_modules/
+dist/
+storage/
+
+# Segredos: a chave da API nunca entra no controle de versão
+.env
+.env.local
+.env.*.local

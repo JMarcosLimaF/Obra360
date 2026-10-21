@@ -1,0 +1,9 @@
+{
+  "name": "obra360",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix apps/web",
+    "dev:web": "npm run dev --prefix apps/web",
+    "dev:api": "npm run dev --prefix apps/api"
+  }
+}
