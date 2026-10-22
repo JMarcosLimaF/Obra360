@@ -1,20 +1,11 @@
 /**
  * A IA da obra, atrás da API.
  *
- * A chave da Anthropic vive só aqui (ANTHROPIC_API_KEY no ambiente do Node) —
- * nunca no bundle do navegador, nunca em localStorage. O cliente manda a imagem
- * (ou a referência a uma que a API já guardou) e recebe o texto.
- *
- * Todas as chamadas usam streaming com `finalMessage()`: ler uma prancha inteira
- * leva minutos, e streaming evita estourar o timeout HTTP; na planta, os deltas
- * ainda vão sendo repassados à tela. O pensamento adaptativo do modelo é
- * sempre ligado; o esforço é configurável (ANTHROPIC_EFFORT).
- *
- * Fallback no servidor (`fallbacks: "default"`): se o modelo principal recusar
- * por política, a própria API da Anthropic refaz a chamada noutro modelo. Se a
- * cadeia inteira recusar, devolvemos um erro claro — nunca texto vazio.
+ * A chave da OpenAI vive só aqui (OPENAI_API_KEY no ambiente do Node) —
+ * nunca no bundle do navegador. O cliente manda a imagem e recebe o texto.
+ * Sem chave, a resposta sai simulada e marcada como tal.
  */
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import type { Config } from "../config.ts";
 import { HttpError } from "../lib/errors.ts";
 import type { ImageMedia } from "../storage.ts";
@@ -51,10 +42,9 @@ export interface RdoDraft {
   model: string | null;
 }
 
-const image = (img: AiImage): Anthropic.Beta.BetaImageBlockParam => ({
-  type: "image",
-  source: { type: "base64", media_type: img.mediaType, data: img.data.toString("base64") },
-});
+type Part =
+  | { type: "text"; text: string }
+  | { type: "image"; image: AiImage };
 
 /** Extrai o objeto JSON da resposta, tolerando cercas de código ao redor. */
 export function parseJsonObject(text: string): Record<string, unknown> | null {
@@ -69,11 +59,22 @@ export function parseJsonObject(text: string): Record<string, unknown> | null {
   }
 }
 
-export class Ai {
-  private readonly client: Anthropic | null;
+function toContent(parts: Part[]): OpenAI.Chat.Completions.ChatCompletionContentPart[] {
+  return parts.map((part) =>
+    part.type === "text"
+      ? { type: "text", text: part.text }
+      : {
+          type: "image_url",
+          image_url: { url: `data:${part.image.mediaType};base64,${part.image.data.toString("base64")}` },
+        },
+  );
+}
 
-  constructor(private readonly cfg: Pick<Config, "ANTHROPIC_API_KEY" | "ANTHROPIC_MODEL" | "ANTHROPIC_EFFORT">) {
-    this.client = cfg.ANTHROPIC_API_KEY ? new Anthropic({ apiKey: cfg.ANTHROPIC_API_KEY }) : null;
+export class Ai {
+  private readonly client: OpenAI | null;
+
+  constructor(private readonly cfg: Pick<Config, "OPENAI_API_KEY" | "OPENAI_MODEL">) {
+    this.client = cfg.OPENAI_API_KEY ? new OpenAI({ apiKey: cfg.OPENAI_API_KEY }) : null;
   }
 
   get configured(): boolean {
@@ -81,48 +82,54 @@ export class Ai {
   }
 
   get model(): string {
-    return this.cfg.ANTHROPIC_MODEL;
+    return this.cfg.OPENAI_MODEL;
   }
 
-  private async run(
-    system: string,
-    content: Anthropic.Beta.BetaContentBlockParam[],
-    onText?: (delta: string) => void,
-  ): Promise<{ text: string; model: string }> {
+  private async run(system: string, parts: Part[], onText?: (delta: string) => void): Promise<{ text: string; model: string }> {
     const client = this.client!;
     try {
-      const stream = client.beta.messages.stream({
-        model: this.cfg.ANTHROPIC_MODEL,
-        max_tokens: 16000,
-        system,
-        output_config: { effort: this.cfg.ANTHROPIC_EFFORT },
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        messages: [{ role: "user", content }],
+      const stream = await client.chat.completions.create({
+        model: this.cfg.OPENAI_MODEL,
+        max_tokens: 8000,
+        stream: true,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: toContent(parts) },
+        ],
       });
-      if (onText) stream.on("text", onText);
-      const msg = await stream.finalMessage();
-      if (msg.stop_reason === "refusal") {
-        throw new HttpError(422, "ia_recusou", "A IA recusou analisar este conteúdo. Registre a análise manualmente.");
+      let text = "";
+      let model = this.cfg.OPENAI_MODEL;
+      for await (const chunk of stream) {
+        if (chunk.model) model = chunk.model;
+        const choice = chunk.choices[0];
+        if (choice?.finish_reason === "content_filter") {
+          throw new HttpError(422, "ia_recusou", "A IA recusou analisar este conteúdo. Registre a análise manualmente.");
+        }
+        const delta = choice?.delta?.content ?? "";
+        if (!delta) continue;
+        text += delta;
+        onText?.(delta);
       }
-      const text = msg.content
-        .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
-        .map((b) => b.text)
-        .join("\n")
-        .trim();
-      return { text, model: msg.model };
+      return { text: text.trim(), model };
     } catch (err) {
       if (err instanceof HttpError) throw err;
-      if (err instanceof Anthropic.AuthenticationError) {
-        throw new HttpError(502, "ia_indisponivel", "A chave da Anthropic configurada no servidor foi recusada.");
+      if (err instanceof OpenAI.AuthenticationError) {
+        throw new HttpError(502, "ia_indisponivel", "A chave da OpenAI configurada no servidor foi recusada.");
       }
-      if (err instanceof Anthropic.RateLimitError) {
-        throw new HttpError(503, "ia_ocupada", "A IA está com limite de uso atingido. Tente de novo em instantes.");
+      if (err instanceof OpenAI.RateLimitError) {
+        const semCredito = err.code === "credit_balance_exhausted" || err.type === "insufficient_quota";
+        throw new HttpError(
+          503,
+          semCredito ? "ia_sem_credito" : "ia_ocupada",
+          semCredito
+            ? "A conta da OpenAI está sem créditos. Adicione créditos no painel da OpenAI para a análise real."
+            : "A IA está com limite de uso atingido. Tente de novo em instantes.",
+        );
       }
-      if (err instanceof Anthropic.BadRequestError) {
+      if (err instanceof OpenAI.BadRequestError) {
         throw new HttpError(422, "ia_requisicao", `A IA não aceitou a requisição: ${err.message}`);
       }
-      if (err instanceof Anthropic.APIError) {
+      if (err instanceof OpenAI.APIError) {
         throw new HttpError(502, "ia_indisponivel", `Falha na IA (${err.status ?? "rede"}). Tente de novo.`);
       }
       throw err;
@@ -132,7 +139,10 @@ export class Ai {
   /** Análise de uma vista 360 (viewer). */
   async analyzeView(img: AiImage, question: string): Promise<AiText> {
     if (!this.client) return { text: P.simulatedView(question), simulated: true, model: null };
-    const r = await this.run(P.VIEW_SYSTEM, [image(img), { type: "text", text: question || "Analise esta vista da obra." }]);
+    const r = await this.run(P.VIEW_SYSTEM, [
+      { type: "image", image: img },
+      { type: "text", text: question || "Analise esta vista da obra." },
+    ]);
     return { text: r.text || "(resposta vazia)", simulated: false, model: r.model };
   }
 
@@ -140,18 +150,18 @@ export class Ai {
   async observeStop(imgs: AiImage[], ctx: { project: string; label: string }): Promise<AiText> {
     if (!this.client) return { text: P.simulatedStop(ctx.label), simulated: true, model: null };
     const fotos = imgs.slice(0, 6);
-    const content: Anthropic.Beta.BetaContentBlockParam[] = [];
+    const parts: Part[] = [];
     fotos.forEach((img, i) => {
-      if (fotos.length > 1) content.push({ type: "text", text: `Foto ${i + 1}:` });
-      content.push(image(img));
+      if (fotos.length > 1) parts.push({ type: "text", text: `Foto ${i + 1}:` });
+      parts.push({ type: "image", image: img });
     });
-    content.push({
+    parts.push({
       type: "text",
       text:
         `Obra: ${ctx.project}. Frente de serviço: ${ctx.label}. ` +
         (fotos.length > 1 ? `São ${fotos.length} fotos da mesma frente — descreva o conjunto.` : ""),
     });
-    const r = await this.run(P.STOP_SYSTEM, content);
+    const r = await this.run(P.STOP_SYSTEM, parts);
     return { text: r.text || "(sem retorno do modelo)", simulated: false, model: r.model };
   }
 
@@ -168,7 +178,10 @@ export class Ai {
     }
     const r = await this.run(
       P.PLAN_SYSTEM,
-      [image(img), { type: "text", text: `Obra: ${ctx.project}. Planta: ${ctx.plan}.` }],
+      [
+        { type: "image", image: img },
+        { type: "text", text: `Obra: ${ctx.project}. Planta: ${ctx.plan}.` },
+      ],
       onDelta,
     );
     return { text: r.text || "(resposta vazia)", simulated: false, model: r.model };
@@ -182,15 +195,15 @@ export class Ai {
     if (!this.client || sources.length === 0) {
       return { ...P.simulatedRdo(ctx.project, ctx.date), simulated: true, model: null };
     }
-    const content: Anthropic.Beta.BetaContentBlockParam[] = [];
+    const parts: Part[] = [];
     sources.slice(0, 8).forEach((src, i) => {
-      content.push({ type: "text", text: `Ponto ${i + 1}${src.label ? ` — ${src.label}` : ""} do registro 360°:` });
-      content.push(image(src.image));
+      parts.push({ type: "text", text: `Ponto ${i + 1}${src.label ? ` — ${src.label}` : ""} do registro 360°:` });
+      parts.push({ type: "image", image: src.image });
       if (src.previousAnalysis) {
-        content.push({ type: "text", text: `Análise já registrada para esta vista:\n${src.previousAnalysis.slice(0, 1500)}` });
+        parts.push({ type: "text", text: `Análise já registrada para esta vista:\n${src.previousAnalysis.slice(0, 1500)}` });
       }
     });
-    content.push({
+    parts.push({
       type: "text",
       text: [
         `Obra: ${ctx.project}`,
@@ -203,10 +216,9 @@ export class Ai {
         "Redija os campos do RDO a partir deste registro.",
       ].join("\n"),
     });
-    const r = await this.run(P.RDO_SYSTEM, content);
+    const r = await this.run(P.RDO_SYSTEM, parts);
     const parsed = parseJsonObject(r.text);
     if (!parsed) {
-      // fora do formato: aproveita o texto como observações em vez de perdê-lo
       return { servicesExecuted: "", occurrences: "", nonConformities: "", notes: r.text, simulated: false, model: r.model };
     }
     return {
@@ -229,11 +241,11 @@ export class Ai {
       return { itens, simulated: true, model: null, raw: JSON.stringify({ itens }) };
     }
     const r = await this.run(P.TRIAGEM_SYSTEM, [
-      image(img),
+      { type: "image", image: img },
       { type: "text", text: `Obra: ${ctx.project}. Frente: ${ctx.level}. Aponte as candidatas a não conformidade.` },
     ]);
     const obj = parseJsonObject(r.text);
-    const itens = Array.isArray(obj?.itens) ? (obj!.itens as NcSuggestion[]) : [];
+    const itens = Array.isArray(obj?.itens) ? (obj.itens as NcSuggestion[]) : [];
     return { itens: itens.filter((i) => i && i.titulo).slice(0, 6), simulated: false, model: r.model, raw: r.text };
   }
 }

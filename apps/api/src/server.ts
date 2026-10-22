@@ -1,4 +1,4 @@
-import { Ai } from "./ai/claude.ts";
+import { Ai } from "./ai/openai.ts";
 import { buildApp } from "./app.ts";
 import { loadConfig } from "./config.ts";
 import { adminClient } from "./db/supabase.ts";

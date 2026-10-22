@@ -1,7 +1,7 @@
 /**
  * Configuração da API, lida do ambiente (arquivo `.env` em dev, nunca commitado).
  *
- * Tudo que é segredo — chaves do Supabase, chave da Anthropic — entra por
+ * Tudo que é segredo — chaves do Supabase, chave da OpenAI — entra por
  * aqui e só por aqui. Validamos na partida para que um `.env` incompleto falhe
  * com uma frase legível, em vez de virar um 500 misterioso na primeira requisição.
  */
@@ -37,9 +37,8 @@ const Env = z.object({
 
   STORAGE_ROOT: z.string().default(path.join(REPO_ROOT, "storage")),
 
-  ANTHROPIC_API_KEY: z.string().optional(),
-  ANTHROPIC_MODEL: z.string().default("claude-opus-5-5"),
-  ANTHROPIC_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).default("medium"),
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_MODEL: z.string().default("gpt-4o"),
 
   REDIS_URL: z.string().optional(),
 

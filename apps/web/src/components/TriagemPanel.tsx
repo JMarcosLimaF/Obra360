@@ -258,7 +258,7 @@ export default function TriagemPanel({
       {simulada && itens && (
         <p className="mb-5 flex animate-pop items-start gap-2.5 rounded-xl bg-[#fdf4e2] px-3.5 py-2.5 text-[12.5px] leading-relaxed text-warn ring-1 ring-inset ring-[#efdcb0]">
           <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>Triagem simulada — configure a chave da API Anthropic para a leitura real da vista.</span>
+          <span>Triagem simulada — coloque OPENAI_API_KEY em apps/api/.env para a leitura real da vista.</span>
         </p>
       )}
 

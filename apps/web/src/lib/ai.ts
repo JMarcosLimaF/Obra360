@@ -1,7 +1,7 @@
 /**
  * IA da obra, chamada pela API Node.
  *
- * A chave da Anthropic não entra no navegador. Sem chave no servidor, a API
+ * A chave da OpenAI não entra no navegador. Sem chave no servidor, a API
  * devolve texto marcado como simulado — a tela continua demonstrável.
  */
 import { api } from "../api/client";

@@ -66,12 +66,12 @@ Regras invioláveis:
 - No máximo 6 itens, do mais grave para o menos grave. Nenhuma inconsistência visível: itens vazio.`;
 
 // ---------------------------------------------------------------------------
-// Sem ANTHROPIC_API_KEY no servidor, o fluxo roda com saídas simuladas e
+// Sem OPENAI_API_KEY no servidor, o fluxo roda com saídas simuladas e
 // claramente identificadas — a tela continua demonstrável, e ninguém confunde
 // simulação com leitura real.
 // ---------------------------------------------------------------------------
 
-const SEM_CHAVE = "configure ANTHROPIC_API_KEY no servidor (apps/api/.env) para a leitura real";
+const SEM_CHAVE = "configure OPENAI_API_KEY em apps/api/.env para a leitura real";
 
 export function simulatedView(question: string): string {
   return [

@@ -464,7 +464,7 @@ function RdoEditor({ rdo, onBack }: { rdo: Rdo; onBack: () => void }) {
             )}
             {rdo.aiSimulated && rdo.aiDrafted && (
               <p className="mb-4 animate-pop rounded-xl bg-[#fdf4e2] px-3.5 py-2.5 text-[12.5px] text-warn ring-1 ring-inset ring-[#efdcb0]">
-                Rascunho simulado — configure a chave da Anthropic no Tour 360 para redação real das imagens.
+                Rascunho simulado — coloque OPENAI_API_KEY em apps/api/.env para a redação real das imagens.
               </p>
             )}
 

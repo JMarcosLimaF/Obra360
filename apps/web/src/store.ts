@@ -42,10 +42,8 @@ const LS_AI_KEY = "obra360.anthropicKey";
  *  Pode ser sobrescrita nas configurações (engrenagem) do viewer. */
 const DEFAULT_MP_SDK_KEY = import.meta.env.VITE_MP_SDK_KEY || "7xcc5p5tdquzprbzfb0qw5std";
 
-/** Chave da API Anthropic vinda de `.env.local` — sobrevive à limpeza do
- *  navegador, que já apagou a chave digitada mais de uma vez. O que o usuário
- *  digitar na engrenagem continua tendo prioridade. */
-const DEFAULT_AI_KEY = import.meta.env.VITE_ANTHROPIC_KEY ?? "";
+/** A chave da OpenAI fica no servidor. Este valor só preserva o que já estava gravado no navegador. */
+const DEFAULT_AI_KEY = "";
 
 function lsGet(key: string): string {
   try { return localStorage.getItem(key) ?? ""; } catch { return ""; }

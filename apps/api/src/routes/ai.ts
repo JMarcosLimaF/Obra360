@@ -1,5 +1,5 @@
 /**
- * A chave da Anthropic fica neste processo. O navegador manda a imagem e
+ * A chave da OpenAI fica neste processo. O navegador manda a imagem e
  * recebe o texto; se não houver chave, a resposta vem marcada como simulada.
  */
 import type { FastifyInstance, FastifyRequest } from "fastify";

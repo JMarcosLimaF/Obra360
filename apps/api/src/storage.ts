@@ -39,7 +39,7 @@ const CONTENT_TYPE: Record<string, string> = {
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 
 /**
- * Normaliza o data URL de imagem para o que a API da Anthropic aceita.
+ * Normaliza o data URL de imagem para o que a API de visão aceita.
  * O Renderer do Matterport devolve `data:image/jpg;base64,...` — `image/jpg` não é
  * media type válido (o certo é `image/jpeg`), então traduzimos na entrada.
  */

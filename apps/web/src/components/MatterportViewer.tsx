@@ -841,7 +841,7 @@ export default function MatterportViewer({ modelId, projectId, onSdkChange, hide
                   {!useApp.getState().aiConfigured && (
                     <p className="mb-3 flex items-start gap-2 rounded-xl bg-[#fdf4e2] px-3.5 py-2.5 text-[12px] leading-relaxed text-warn ring-1 ring-inset ring-[#efdcb0]">
                       <IconAlert className="mt-px h-4 w-4 shrink-0" />
-                      O servidor está sem chave da Anthropic — a análise sai simulada, identificada como tal.
+                      O servidor está sem chave da OpenAI — a análise sai simulada, identificada como tal.
                     </p>
                   )}
                   <button onClick={runAnalysis} disabled={analyzing} className="btn btn-primary btn-lg w-full">
@@ -861,7 +861,7 @@ export default function MatterportViewer({ modelId, projectId, onSdkChange, hide
                   {aiResult.simulated && (
                     <p className="mb-3 flex items-start gap-2 rounded-xl bg-[#fdf4e2] px-3.5 py-2.5 text-[12px] leading-relaxed text-warn ring-1 ring-inset ring-[#efdcb0]">
                       <IconAlert className="mt-px h-4 w-4 shrink-0" />
-                      Análise simulada — configure a chave Anthropic para análise real.
+                      Análise simulada — coloque OPENAI_API_KEY em apps/api/.env para a análise real.
                     </p>
                   )}
                   <RichText text={aiResult.text} />
@@ -971,7 +971,7 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
           A chave é gratuita no painel do Matterport, em ferramentas de desenvolvedor.
         </p>
         <p className="mb-6 rounded-xl bg-subtle px-3.5 py-2.5 text-[11.5px] leading-relaxed text-ink-2 ring-1 ring-inset ring-line-2">
-          A análise por IA sai do servidor. A chave da Anthropic fica no ambiente da API, não nesta página.
+          A análise por IA sai do servidor. A chave da OpenAI fica em apps/api/.env, não nesta página.
         </p>
         <div className="flex gap-2">
           <button

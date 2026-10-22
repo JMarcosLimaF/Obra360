@@ -518,7 +518,7 @@ export default function Plantas() {
                 {plan.analysisSimulated && (
                   <p className="mb-3 flex items-start gap-2 rounded-xl bg-[#fdf4e2] px-3 py-2 text-[11.5px] leading-relaxed text-warn ring-1 ring-inset ring-[#efdcb0]">
                     <IconAlert className="mt-px h-3.5 w-3.5 shrink-0" />
-                    Leitura simulada — configure a chave da Anthropic no Tour 360 para leitura real.
+                    Leitura simulada — coloque OPENAI_API_KEY em apps/api/.env para a leitura real.
                   </p>
                 )}
                 <RichText text={plan.analysis} />

@@ -110,7 +110,7 @@ Tools → SDK Key Management), configurada no botão ⚙ do viewer, habilitam-se
   captura a coordenada 3D (`Pointer.intersection`), abre o formulário de pendência e
   cria um **tag** no modelo (`Tag.add`). A pendência fica ancorada por coordenada.
 - **✨ Analisar com IA** — captura a vista atual (`Renderer.takeScreenShot`) e envia
-  ao Claude (vision) com prompt de engenharia civil: estágio construtivo, serviços
+  à OpenAI (visão) com prompt de engenharia civil: estágio construtivo, serviços
   visíveis, não conformidades/riscos (NR-18) e recomendações. As análises ficam no
   painel lateral, no dashboard e entram no relatório PDF com a imagem.
 
@@ -120,24 +120,23 @@ tabelas) e é renderizado por `components/RichText.tsx` — sem biblioteca de ma
 conformidade, risco ou segurança ganham destaque em vermelho, que é o que o
 engenheiro procura primeiro.
 
-A chave da **API Anthropic** habilita a análise real; sem ela o fluxo
-roda com uma análise simulada claramente identificada. Nota: no MVP a chamada de IA
-sai do browser (chave do usuário, localStorage) — em produção vai para o backend.
+A chave da **API OpenAI** habilita a análise real; sem ela o fluxo
+roda com uma análise simulada claramente identificada. A chamada sai da API,
+nunca do navegador.
 
 ### Chaves de API
 
-As chaves ficam em `apps/web/.env.local` (fora do controle de versão), e o que for
-digitado na engrenagem do viewer tem prioridade sobre elas:
+A chave da OpenAI fica em `apps/api/.env` (fora do controle de versão). Deixe a linha
+vazia e cole a chave depois do `=`:
 
 ```
-VITE_ANTHROPIC_KEY=sk-ant-...
-VITE_MP_SDK_KEY=...
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o
 ```
 
-Alterar o arquivo exige reiniciar o `npm run dev` — o Vite lê o `.env` no boot. Aviso:
-variáveis `VITE_*` são **embutidas no bundle**, então a chave fica legível para quem
-tiver o `dist` ou a página. Isso é aceitável só neste MVP local; em produção a chamada
-vai para o backend e a chave nunca chega ao cliente.
+A chave do Matterport, se usada, fica em `apps/web/.env.local` como `VITE_MP_SDK_KEY`.
+Não coloque a chave da OpenAI numa variável `VITE_*`: o Vite embute essas variáveis
+no bundle e elas ficariam visíveis na página. Depois de salvar o `.env`, reinicie a API.
 
 ### Diário de Obra (RDO) redigido a partir do tour
 
@@ -145,7 +144,7 @@ O RDO segue o formato usado em obra no Brasil: identificação, condições do t
 praticabilidade por período, efetivo, equipamentos, serviços executados, ocorrências,
 não conformidades, anexo fotográfico e assinaturas de contratada e fiscalização.
 
-O botão **Redigir com o tour** envia ao Claude as vistas 360° que você analisou no
+O botão **Redigir com o tour** envia à OpenAI as vistas 360° que você analisou no
 viewer (imagem + análise anterior) e devolve o rascunho dos campos de relato. O
 prompt proíbe inventar quantidades, efetivo ou serviços não visíveis e manda escrever
 "não verificável pelo registro visual" quando a imagem não permite concluir — a

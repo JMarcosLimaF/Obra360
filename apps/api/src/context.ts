@@ -1,4 +1,4 @@
-import type { Ai } from "./ai/claude.ts";
+import type { Ai } from "./ai/openai.ts";
 import type { MemberRole } from "./auth/roles.ts";
 import type { Config } from "./config.ts";
 import type { Sb } from "./db/supabase.ts";
